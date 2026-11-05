@@ -141,8 +141,9 @@
     try {
       const q = new URLSearchParams(location.search).get('api');
       if (q !== null) localStorage.setItem('soilsight.api', q);
-      return (q ?? localStorage.getItem('soilsight.api') ?? '').replace(/\/$/, '');
-    } catch (e) { return ''; }
+      const pages = location.hostname.endsWith('github.io') ? ((window.SOILSIGHT_CONFIG || {}).pagesApi || '') : '';
+      return (q ?? localStorage.getItem('soilsight.api') ?? pages).replace(/\/$/, '');
+    } catch (e) { return location.hostname.endsWith('github.io') ? ((window.SOILSIGHT_CONFIG || {}).pagesApi || '') : ''; }
   }
   const Api = {
     base: apiBase(),

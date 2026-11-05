@@ -149,7 +149,9 @@
     <div class="page-head fade-in">
       <div><h1>Analyze a soil sample</h1><p>Take or choose 2–5 photos of the <strong>same</strong> soil. SoilSight reads the photos and fills in the details for you.</p></div>
     </div>
-    ${offline ? `<div class="banner banner--warn" role="alert"><strong>The prediction server is not running.</strong> On the computer with SoilSight, double-click <code>backend\\start.bat</code> (or run <code>python serve.py</code>) and keep the window open, then reload this page. Until then, results are only simulated.</div>` : ''}
+    ${offline ? (Api.base
+      ? `<div class="banner banner--warn" role="alert"><strong>The online model server is not reachable right now.</strong> It may still be waking up — reload this page in a minute. Until then, results are only simulated.</div>`
+      : `<div class="banner banner--warn" role="alert"><strong>The prediction server is not running.</strong> On the computer with SoilSight, double-click <code>backend\\start.bat</code> (or run <code>python serve.py</code>) and keep the window open, then reload this page. Until then, results are only simulated.</div>`) : ''}
     <div class="upload-grid">
       <section aria-label="Photos">
         <details class="card guide" ${state.history.some(h => !h.example) ? '' : 'open'}>
@@ -888,6 +890,13 @@
     state.api = { ...h, checked: true };
     showModelStatus();
     if (h.loading && tries < 60) { setTimeout(() => checkServer(tries + 1), 2000); return; }
+    // an online server (Hugging Face) may be asleep: it wakes up within ~1-2 minutes, keep asking
+    if (!h.ok && Api.base && tries < 15) {
+      const badge = document.getElementById('model-badge');
+      if (badge) { badge.textContent = 'Waking up…'; badge.title = 'The online model server is starting. This takes up to 2 minutes after a quiet period.'; }
+      setTimeout(() => checkServer(tries + 1), 8000);
+      return;
+    }
     const page = (location.hash.split('/')[1] || '');
     if (page === 'upload' && was !== h.ok && !state.files.length) render();   // show / hide the "server not running" note
   }

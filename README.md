@@ -90,6 +90,8 @@ The app can run 24/7 on **Hugging Face Spaces** (free). After the one-time setup
 4. Open the **Actions** tab → **Deploy to Hugging Face Spaces** → **Run workflow**.
 5. When it's green, the log shows the app address, e.g. `https://yourname-soilsight.hf.space`. The first start takes about 3–5 minutes (Hugging Face builds the container).
 
+The GitHub Pages copy (https://jayvarmes.github.io/soilsight-mockup/) uses the same Space as its model server. Its address is set in `js/config.js` (`pagesApi`). Change it if your Space link is different.
+
 Notes: the free Space sleeps after 48 hours without visitors and wakes up when someone opens it (about 1 minute). Photos are analysed in memory and not saved; history stays in each user's own browser.
 ## Run it with Docker (no Python install)
 
@@ -193,6 +195,7 @@ With only 24 training samples the score moves a lot between runs and folds. Trea
 
 ```
 index.html, css/, js/       web app (no build step)
+  js/config.js              address of the online model server used by GitHub Pages
   js/data.js                soil maths, API client, demo fallback, history storage
   js/chart.js               SVG curve + likely-range band
   js/app.js                 screens: home, upload (auto-fill, coin tool), result (plain words), history

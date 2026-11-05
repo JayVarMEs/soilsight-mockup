@@ -1,0 +1,21 @@
+# Runs the unit tests (soil maths, file-name matching, automatic scale) on every push and pull request.
+name: Tests
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install (no PyTorch needed for these tests)
+        run: pip install numpy pandas scipy scikit-learn opencv-python-headless pillow joblib pytest
+      - name: Run tests
+        working-directory: backend
+        run: python -m pytest -q tests
+      - name: Check the web app scripts parse
+        run: for f in js/*.js; do node -e "new Function(require('fs').readFileSync('$f','utf8'))" && echo "ok $f"; done

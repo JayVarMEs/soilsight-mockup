@@ -91,7 +91,23 @@ The app can run 24/7 on **Hugging Face Spaces** (free). After the one-time setup
 5. When it's green, the log shows the app address, e.g. `https://yourname-soilsight.hf.space`. The first start takes about 3–5 minutes (Hugging Face builds the container).
 
 Notes: the free Space sleeps after 48 hours without visitors and wakes up when someone opens it (about 1 minute). Photos are analysed in memory and not saved; history stays in each user's own browser.
-You can also run the same container anywhere: `docker build -t soilsight . && docker run -p 7860:7860 soilsight`.
+## Run it with Docker (no Python install)
+
+Every push to `main` also publishes a ready-made image to GitHub Packages (`.github/workflows/container.yml`), so you don't have to build it:
+
+```bash
+docker run -p 7860:7860 ghcr.io/jayvarmes/soilsight:latest     # then open http://localhost:7860
+```
+
+Or from this folder (Windows: double-click `backend\\start-docker.bat`):
+
+```bash
+docker compose up                                    # the app, http://localhost:7860
+docker compose run --rm train                        # retrain on ../soil-grain-size-from-photos
+set SOIL_DATA=C:\\400\\data && docker compose run --rm train   # photos somewhere else (Windows cmd)
+```
+
+Training in the container gives the same model as on the PC (CV EMD 37.6). The new model is saved to `backend/artifacts/` and the app uses it after a restart.
 
 ## Run it on your own computer
 
@@ -181,7 +197,8 @@ index.html, css/, js/       web app (no build step)
   js/chart.js               SVG curve + likely-range band
   js/app.js                 screens: home, upload (auto-fill, coin tool), result (plain words), history
 backend/
-  start.bat, start-phone.bat  double-click to run (this PC / also phones on Wi-Fi)
+  start.bat, start-phone.bat  double-click to run with Python (this PC / also phones on Wi-Fi)
+  start-docker.bat          double-click to run with Docker Desktop
   soilsight/photo.py        photo info (EXIF), automatic scale, photo quality checks
   soilsight/features.py     image features at a fixed real scale (based on the notebook)
   soilsight/model.py        Ridge fold ensemble, confidence

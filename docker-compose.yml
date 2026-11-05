@@ -1,0 +1,21 @@
+# One command for everything (needs Docker Desktop):
+#   docker compose up                 -> app at http://localhost:7860
+#   docker compose run --rm train     -> retrain on the Kaggle photos in ../soil-grain-size-from-photos
+services:
+  app:
+    image: ghcr.io/jayvarmes/soilsight:latest
+    build: .
+    ports:
+      - "7860:7860"
+    volumes:
+      - ./backend/artifacts:/app/backend/artifacts   # use the model in this folder (after retraining too)
+    restart: unless-stopped
+
+  train:
+    image: ghcr.io/jayvarmes/soilsight:latest
+    build: .
+    profiles: ["train"]
+    volumes:
+      - ${SOIL_DATA:-../soil-grain-size-from-photos}:/data:ro
+      - ./backend/artifacts:/app/backend/artifacts
+    command: ["python", "backend/train.py", "--data", "/data", "--submission"]

@@ -4,7 +4,7 @@
   const NS = 'http://www.w3.org/2000/svg';
   const W = 760, H = 320, M = { l: 52, r: 16, t: 28, b: 52 };
   const PW = W - M.l - M.r, PH = H - M.t - M.b;
-  const LMIN = -3, LMAX = Math.log10(30); // 0.001 mm .. 30 mm
+  const LMIN = -3, LMAX = Math.log10(300); // 0.001 mm .. 300 mm
 
   const x = d => ((Math.log10(d) - LMIN) / (LMAX - LMIN)) * PW;
   const y = p => PH - (p / 100) * PH;
@@ -27,7 +27,8 @@
     const g = el('g', { transform: `translate(${M.l},${M.t})` }, svg);
 
     // soil bands
-    const bands = [['Clay', 0.001, 0.002, '#EEF7EF'], ['Silt', 0.002, 0.075, '#F5FBF6'], ['Sand', 0.075, 4.75, '#FFFBEB'], ['Gravel', 4.75, 30, '#F7F1EA']];
+    // ISO 14688 fraction limits
+    const bands = [['Clay', 0.001, 0.002, '#EEF7EF'], ['Silt', 0.002, 0.063, '#F5FBF6'], ['Sand', 0.063, 2, '#FFFBEB'], ['Gravel', 2, 63, '#F7F1EA'], ['Cobbles', 63, 300, '#EFE7DD']];
     bands.forEach(([name, a, b, fill]) => {
       el('rect', { x: x(a), y: 0, width: x(b) - x(a), height: PH, fill }, g);
       const t = el('text', { x: (x(a) + x(b)) / 2, y: -10, 'text-anchor': 'middle', class: 'band-label' }, g);
@@ -41,7 +42,7 @@
       t.textContent = p + '%';
     });
     // x ticks
-    [0.001, 0.01, 0.1, 1, 10].forEach(d => {
+    [0.001, 0.01, 0.1, 1, 10, 100].forEach(d => {
       el('line', { x1: x(d), x2: x(d), y1: PH, y2: PH + 6, stroke: '#86C79B' }, g);
       const t = el('text', { x: x(d), y: PH + 22, 'text-anchor': 'middle', class: 'tick' }, g);
       t.textContent = d;
@@ -56,6 +57,13 @@
       const t = el('text', { x: x(d) + 4, y: y(p) - 6 - (i === 2 ? 10 : 0), class: 'dlabel' }, g);
       t.textContent = label;
     });
+
+    // uncertainty band (10th-90th percentile from the model), if the result has one
+    if (result.band && result.band.lo && result.band.hi) {
+      const up = result.curve.map(([d], i) => `${x(d).toFixed(1)} ${y(result.band.hi[i]).toFixed(1)}`);
+      const down = result.curve.map(([d], i) => `${x(d).toFixed(1)} ${y(result.band.lo[i]).toFixed(1)}`).reverse();
+      el('path', { d: 'M' + up.join(' L') + ' L' + down.join(' L') + ' Z', class: 'ci-band' }, g);
+    }
 
     // curve
     const pts = result.curve;

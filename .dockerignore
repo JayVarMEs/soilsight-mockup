@@ -1,0 +1,11 @@
+.git
+.github
+docs
+design-system
+backend/artifacts/cache
+backend/tests
+backend/research
+**/__pycache__
+**/.pytest_cache
+*.md
+!README.md

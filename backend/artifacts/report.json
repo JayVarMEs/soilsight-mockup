@@ -1,0 +1,174 @@
+{
+  "model": "ResNet34 + Ridge, scale-normalised",
+  "version": "2.1",
+  "trained_at": "2026-11-04T21:01:20+00:00",
+  "n_samples": 24,
+  "n_features": 536,
+  "n_folds": 5,
+  "cv_emd": {
+    "baseline_mean_curve": 88.49025494896746,
+    "ridge": 37.70821430965261,
+    "blend": 37.70821430965261,
+    "blend_constrained": 37.632629098710964
+  },
+  "cv_type_accuracy": 0.625,
+  "oof_abs_error_per_size": {
+    "0.002": 2.1,
+    "0.0063": 3.75,
+    "0.02": 8.25,
+    "0.063": 16.02,
+    "0.2": 14.76,
+    "0.63": 9.14,
+    "2.0": 7.81,
+    "6.3": 8.93,
+    "20.0": 4.98,
+    "63.0": 0.58,
+    "200.0": 0.0
+  },
+  "oof": [
+    {
+      "sample_id": "F827",
+      "true_type": "Silt",
+      "pred_type": "Sandy silt",
+      "emd": 19.462988431010906
+    },
+    {
+      "sample_id": "G190",
+      "true_type": "Sandy silt",
+      "pred_type": "Sandy silt",
+      "emd": 16.07328101437303
+    },
+    {
+      "sample_id": "H030",
+      "true_type": "Silty sand",
+      "pred_type": "Sandy silt",
+      "emd": 29.72801520128129
+    },
+    {
+      "sample_id": "H037",
+      "true_type": "Sandy gravel",
+      "pred_type": "Sandy silt",
+      "emd": 93.78278352402579
+    },
+    {
+      "sample_id": "H038",
+      "true_type": "Sandy gravel",
+      "pred_type": "Sandy silt",
+      "emd": 136.56812648652578
+    },
+    {
+      "sample_id": "H126",
+      "true_type": "Sandy silt",
+      "pred_type": "Silty sand",
+      "emd": 50.46249065810318
+    },
+    {
+      "sample_id": "H181",
+      "true_type": "Sandy gravel",
+      "pred_type": "Sandy gravel",
+      "emd": 18.97734584930807
+    },
+    {
+      "sample_id": "H183",
+      "true_type": "Sandy gravel",
+      "pred_type": "Sandy gravel",
+      "emd": 14.460959860812393
+    },
+    {
+      "sample_id": "H366",
+      "true_type": "Sandy gravel",
+      "pred_type": "Sandy gravel",
+      "emd": 15.410721774445223
+    },
+    {
+      "sample_id": "H367",
+      "true_type": "Sandy gravel",
+      "pred_type": "Sandy gravel",
+      "emd": 17.80384082232012
+    },
+    {
+      "sample_id": "H368",
+      "true_type": "Sandy gravel",
+      "pred_type": "Sandy gravel",
+      "emd": 21.305346963597536
+    },
+    {
+      "sample_id": "H371",
+      "true_type": "Sandy gravel",
+      "pred_type": "Sandy gravel",
+      "emd": 9.724959866991155
+    },
+    {
+      "sample_id": "H372",
+      "true_type": "Sandy gravel",
+      "pred_type": "Sandy gravel",
+      "emd": 11.258890124734094
+    },
+    {
+      "sample_id": "H374",
+      "true_type": "Sandy gravel",
+      "pred_type": "Sandy gravel",
+      "emd": 25.98327203108239
+    },
+    {
+      "sample_id": "H405",
+      "true_type": "Sandy silt",
+      "pred_type": "Silty sand",
+      "emd": 73.95679845494355
+    },
+    {
+      "sample_id": "H493",
+      "true_type": "Sandy silt",
+      "pred_type": "Sandy silt",
+      "emd": 15.290575320084187
+    },
+    {
+      "sample_id": "H516",
+      "true_type": "Gravelly sand",
+      "pred_type": "Gravelly sand",
+      "emd": 59.87985141908475
+    },
+    {
+      "sample_id": "H549",
+      "true_type": "Sandy silt",
+      "pred_type": "Silty sand",
+      "emd": 55.00093633673414
+    },
+    {
+      "sample_id": "H615",
+      "true_type": "Sandy gravel",
+      "pred_type": "Sandy gravel",
+      "emd": 18.450336499175275
+    },
+    {
+      "sample_id": "H616",
+      "true_type": "Sand",
+      "pred_type": "Sandy silt",
+      "emd": 58.772845222448346
+    },
+    {
+      "sample_id": "H617",
+      "true_type": "Silty sand",
+      "pred_type": "Silty sand",
+      "emd": 5.9548374260900765
+    },
+    {
+      "sample_id": "H637",
+      "true_type": "Sandy gravel",
+      "pred_type": "Sandy gravel",
+      "emd": 47.1659246454205
+    },
+    {
+      "sample_id": "H666",
+      "true_type": "Silty sand",
+      "pred_type": "Silty sand",
+      "emd": 31.127651000893216
+    },
+    {
+      "sample_id": "H668",
+      "true_type": "Sandy silt",
+      "pred_type": "Silty sand",
+      "emd": 56.58031943557813
+    }
+  ]
+}

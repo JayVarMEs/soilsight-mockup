@@ -1,3 +1,10 @@
 .DS_Store
 Thumbs.db
 *.log
+__pycache__/
+.pytest_cache/
+.venv/
+# trained model + reports ARE committed (small); only the feature cache is not
+backend/artifacts/cache/
+backend/fake_data/
+data/

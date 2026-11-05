@@ -1,0 +1,37 @@
+# Every push to main updates the live app on Hugging Face Spaces.
+# One-time setup: add a repository secret HF_TOKEN (a Hugging Face "Write" token).
+# Optional: a repository variable HF_SPACE like "yourname/soilsight" (default: <HF username>/soilsight).
+name: Deploy to Hugging Face Spaces
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check for token
+        id: check
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          if [ -z "$HF_TOKEN" ]; then
+            echo "::notice::HF_TOKEN secret is not set, so nothing is deployed. See README > Put it online."
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/setup-python@v5
+        if: steps.check.outputs.ok == 'true'
+        with:
+          python-version: '3.11'
+      - name: Upload to the Space
+        if: steps.check.outputs.ok == 'true'
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_SPACE: ${{ vars.HF_SPACE }}
+        run: |
+          pip install huggingface_hub
+          python deploy/push_to_space.py

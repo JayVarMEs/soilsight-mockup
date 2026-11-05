@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>SoilSight — Soil grain size from photos</title>
-  <meta name="description" content="Mockup: predict soil grain size distribution from a photo.">
+  <meta name="description" content="Predict soil grain size distribution from a photo.">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -25,7 +25,7 @@
         <a href="#/upload" data-nav="upload">Analyze</a>
         <a href="#/history" data-nav="history">History</a>
       </nav>
-      <span class="badge-mock" title="Predictions are simulated">Mockup</span>
+      <span class="badge-mock" id="model-badge" title="Checking model…">Checking…</span>
     </div>
   </header>
 
@@ -34,7 +34,7 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <footer class="footer">
-    <p>SoilSight mockup · DES400 · predictions are simulated for UI testing. Model: <strong>[MODEL NAME]</strong>.</p>
+    <p>SoilSight · DES400 · Model: <strong id="model-name">checking…</strong></p>
   </footer>
 
   <script src="js/data.js"></script>

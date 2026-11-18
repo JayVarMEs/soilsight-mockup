@@ -62,6 +62,15 @@ Over 10 random 5-fold splits, Ridge alone beat the notebook's 50/50 Ridge + SVR 
 | Coarse or fine soil | **98 %** | 50 % |
 | Detailed name, e.g. *Sandy gravel* | – (never that sure) | 0 % |
 
+When the app cannot pick one group, it also shows the **two most likely groups together** (`TOP2_NOISE_SCALE = 1.75`). Same check, 5 random splits:
+
+| Answer | Average % the app shows | Right in reality | Samples where it is ≥ 80 % sure | Right then |
+|---|---|---|---|---|
+| One main group | 71 % | 63 % | 38 % | 98 % |
+| **Top two groups together** | **92 %** | **91 %** | **99 %** | **91 %** |
+
+So the app is almost always (99 % of samples) at least 80 % sure the soil is one of two named groups, and that is true 91 % of the time.
+
 So the app shows the main group as the big answer, with coarse/fine and the detailed name below it. The % is not pushed up artificially: it comes from adding the model's measured error (× 1.5, `NOISE_SCALE`, chosen so the % matches reality) to the curve 1000 times. Re-check after retraining with `python research/calibrate.py PATH_TO_DATA`.
 
 **Does it work with any phone?** Same photo, made to look like a different phone (10 training photos, EMD change, lower = more stable):
@@ -218,3 +227,16 @@ docs/screenshots/           screenshots
 Generated with the **ui-ux-pro-max** skill (see `design-system/soilsight/MASTER.md`): earth green `#15803D`,
 harvest gold `#A16207`, Fira Sans + Fira Code, 44 px touch targets, visible focus, chart with a data-table fallback,
 responsive 375 → 1440 px.
+
+## Check a prediction against a lab result (new)
+
+On the result page, type the lab % passing at 0.002, 0.0063, 0.02, 0.063, 0.2, 0.63, 2, 6.3, 20 and 63 mm
+(10 numbers; 200 mm is always 100) and press **Compare**. The app shows:
+
+- the **EMD error** (same log-weighted formula as the Kaggle metric; lower is better, 0 = perfect),
+- the lab curve as a dashed line on the chart,
+- a size-by-size table of predicted vs lab values.
+
+The lab result is saved with the prediction in History and added to the CSV export
+(`lab_emd` and `lab_<size>mm` columns). Remove it with **Remove lab result**.
+Everything runs in the browser, so the server needs no change.

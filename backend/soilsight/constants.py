@@ -25,6 +25,11 @@ TARGET_TRANSFORM = 'logit'
 # the % matches reality (CV on the 24 samples: answers shown at >= 80 % were right 98 % of the time).
 NOISE_SCALE = 1.5
 RELIABILITY_AT_80 = 98
+# "Top two" answer: the chance that the true main group is one of the two most likely groups.
+# CV on the 24 samples (research/calibrate.py): true group was in the top two for 91 % of samples,
+# and the app's top-two % averages 92 % at this noise factor, so the % matches reality.
+TOP2_NOISE_SCALE = 1.75
+RELIABILITY_TOP_TWO = 91
 # Fewer photos = bigger error (CV EMD: 1 photo 41.6, 2 photos 37.1, 3 photos 36.1, all 35.5),
 # so the error used for the confidence is widened for 1-2 photos.
 PHOTO_COUNT_NOISE = {1: 1.17, 2: 1.05}   # shown in the app; re-check with research/calibrate.py after retraining

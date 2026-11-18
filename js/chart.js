@@ -65,6 +65,13 @@
       el('path', { d: 'M' + up.join(' L') + ' L' + down.join(' L') + ' Z', class: 'ci-band' }, g);
     }
 
+    // lab (reference) curve, if the user typed one in
+    if (Array.isArray(result.reference) && result.reference.length === result.curve.length) {
+      const rp = result.curve.map(([d], i) => `${i ? 'L' : 'M'}${x(d).toFixed(1)} ${y(result.reference[i]).toFixed(1)}`).join(' ');
+      el('path', { d: rp, class: 'ref-curve' }, g);
+      result.curve.forEach(([d], i) => el('circle', { cx: x(d), cy: y(result.reference[i]), r: 4, class: 'ref-dot' }, g));
+    }
+
     // curve
     const pts = result.curve;
     const dpath = pts.map(([d, p], i) => `${i ? 'L' : 'M'}${x(d).toFixed(1)} ${y(p).toFixed(1)}`).join(' ');

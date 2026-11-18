@@ -1,15 +1,15 @@
 {
   "model": "ResNet34 + Ridge, scale-normalised",
   "version": "2.1",
-  "trained_at": "2026-11-04T21:01:20+00:00",
+  "trained_at": "2026-11-16T20:15:58+00:00",
   "n_samples": 24,
   "n_features": 536,
   "n_folds": 5,
   "cv_emd": {
     "baseline_mean_curve": 88.49025494896746,
-    "ridge": 37.70821430965261,
-    "blend": 37.70821430965261,
-    "blend_constrained": 37.632629098710964
+    "ridge": 37.7082143096526,
+    "blend": 37.7082143096526,
+    "blend_constrained": 37.63262909871096
   },
   "cv_type_accuracy": 0.625,
   "oof_abs_error_per_size": {
@@ -30,19 +30,19 @@
       "sample_id": "F827",
       "true_type": "Silt",
       "pred_type": "Sandy silt",
-      "emd": 19.462988431010906
+      "emd": 19.46298843101088
     },
     {
       "sample_id": "G190",
       "true_type": "Sandy silt",
       "pred_type": "Sandy silt",
-      "emd": 16.07328101437303
+      "emd": 16.073281014373
     },
     {
       "sample_id": "H030",
       "true_type": "Silty sand",
       "pred_type": "Sandy silt",
-      "emd": 29.72801520128129
+      "emd": 29.728015201281323
     },
     {
       "sample_id": "H037",
@@ -60,13 +60,13 @@
       "sample_id": "H126",
       "true_type": "Sandy silt",
       "pred_type": "Silty sand",
-      "emd": 50.46249065810318
+      "emd": 50.462490658103185
     },
     {
       "sample_id": "H181",
       "true_type": "Sandy gravel",
       "pred_type": "Sandy gravel",
-      "emd": 18.97734584930807
+      "emd": 18.977345849308062
     },
     {
       "sample_id": "H183",
@@ -78,91 +78,91 @@
       "sample_id": "H366",
       "true_type": "Sandy gravel",
       "pred_type": "Sandy gravel",
-      "emd": 15.410721774445223
+      "emd": 15.410721774445234
     },
     {
       "sample_id": "H367",
       "true_type": "Sandy gravel",
       "pred_type": "Sandy gravel",
-      "emd": 17.80384082232012
+      "emd": 17.803840822320133
     },
     {
       "sample_id": "H368",
       "true_type": "Sandy gravel",
       "pred_type": "Sandy gravel",
-      "emd": 21.305346963597536
+      "emd": 21.30534696359757
     },
     {
       "sample_id": "H371",
       "true_type": "Sandy gravel",
       "pred_type": "Sandy gravel",
-      "emd": 9.724959866991155
+      "emd": 9.724959866991105
     },
     {
       "sample_id": "H372",
       "true_type": "Sandy gravel",
       "pred_type": "Sandy gravel",
-      "emd": 11.258890124734094
+      "emd": 11.258890124734123
     },
     {
       "sample_id": "H374",
       "true_type": "Sandy gravel",
       "pred_type": "Sandy gravel",
-      "emd": 25.98327203108239
+      "emd": 25.983272031082347
     },
     {
       "sample_id": "H405",
       "true_type": "Sandy silt",
       "pred_type": "Silty sand",
-      "emd": 73.95679845494355
+      "emd": 73.95679845494357
     },
     {
       "sample_id": "H493",
       "true_type": "Sandy silt",
       "pred_type": "Sandy silt",
-      "emd": 15.290575320084187
+      "emd": 15.290575320084155
     },
     {
       "sample_id": "H516",
       "true_type": "Gravelly sand",
       "pred_type": "Gravelly sand",
-      "emd": 59.87985141908475
+      "emd": 59.87985141908469
     },
     {
       "sample_id": "H549",
       "true_type": "Sandy silt",
       "pred_type": "Silty sand",
-      "emd": 55.00093633673414
+      "emd": 55.000936336734114
     },
     {
       "sample_id": "H615",
       "true_type": "Sandy gravel",
       "pred_type": "Sandy gravel",
-      "emd": 18.450336499175275
+      "emd": 18.45033649917527
     },
     {
       "sample_id": "H616",
       "true_type": "Sand",
       "pred_type": "Sandy silt",
-      "emd": 58.772845222448346
+      "emd": 58.77284522244835
     },
     {
       "sample_id": "H617",
       "true_type": "Silty sand",
       "pred_type": "Silty sand",
-      "emd": 5.9548374260900765
+      "emd": 5.954837426090048
     },
     {
       "sample_id": "H637",
       "true_type": "Sandy gravel",
       "pred_type": "Sandy gravel",
-      "emd": 47.1659246454205
+      "emd": 47.16592464542046
     },
     {
       "sample_id": "H666",
       "true_type": "Silty sand",
       "pred_type": "Silty sand",
-      "emd": 31.127651000893216
+      "emd": 31.12765100089317
     },
     {
       "sample_id": "H668",

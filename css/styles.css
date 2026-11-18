@@ -409,3 +409,14 @@ details.data-table summary { cursor: pointer; min-height: 44px; display: inline-
 .tip-more[hidden] { display: none; }
 .tip-more svg { width: 20px; height: 20px; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 2; }
 .plain__more { margin: 10px 0 0; font-size: 14px; color: #14532D; }
+
+/* Lab (reference) curve + comparison card */
+.chart .ref-curve { fill: none; stroke: var(--color-foreground, #1c1917); stroke-width: 2.5; stroke-dasharray: 7 5; }
+.chart .ref-dot { fill: #fff; stroke: var(--color-foreground, #1c1917); stroke-width: 2; }
+.chart-legend .ref { width: 16px; height: 0; border: 0; border-top: 3px dashed var(--color-foreground, #1c1917); border-radius: 0; background: none; }
+.lab .lab__emd { font: 600 44px var(--font-mono, monospace); line-height: 1.1; }
+.lab .lab__row { display: flex; flex-wrap: wrap; gap: 24px; align-items: baseline; margin: 8px 0 12px; }
+.lab textarea { width: 100%; min-height: 72px; font: 500 15px var(--font-mono, monospace); padding: 10px 12px; border: 1px solid var(--color-border, #d6d3d1); border-radius: 8px; box-sizing: border-box; }
+.lab .lab__err { color: #b42318; font-size: 14px; min-height: 20px; margin: 6px 0; }
+.lab .lab__actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.lab .table td.neg { color: #b42318; }

@@ -24,7 +24,7 @@ from sklearn.model_selection import KFold
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVR
 
-from .constants import N_FOLDS, RIDGE_ALPHA, RIDGE_WEIGHT, SEED, SIZES_MM, SVR_C, SVR_EPS, TARGET_TRANSFORM, NOISE_SCALE, PHOTO_COUNT_NOISE
+from .constants import N_FOLDS, RIDGE_ALPHA, RIDGE_WEIGHT, SEED, SIZES_MM, SVR_C, SVR_EPS, TARGET_TRANSFORM, NOISE_SCALE, PHOTO_COUNT_NOISE, TOP2_NOISE_SCALE
 from .soil import apply_constraints, coarse_or_fine, emd, soil_group, soil_type
 
 MODEL_NAME = 'ResNet34 + Ridge, scale-normalised'
@@ -130,10 +130,14 @@ class SoilModel:
         # pick a fold model at random, then add a realistic error
         base = members[rng.integers(len(members), size=n_draws)]
         k = NOISE_SCALE * PHOTO_COUNT_NOISE.get(int(n_photos), 1.0)
-        noise = self.err_mean[:-1] + k * rng.multivariate_normal(np.zeros(len(self.err_cov)), self.err_cov, size=n_draws)
+        z = rng.multivariate_normal(np.zeros(len(self.err_cov)), self.err_cov, size=n_draws)
         draws = base.copy()
-        draws[:, :-1] += noise
+        draws[:, :-1] += self.err_mean[:-1] + k * z
         draws = apply_constraints(draws)
+        # Same draws with the top-two noise factor (see constants.py), used for the "top two" answer only
+        draws2 = base.copy()
+        draws2[:, :-1] += self.err_mean[:-1] + TOP2_NOISE_SCALE * PHOTO_COUNT_NOISE.get(int(n_photos), 1.0) * z
+        draws2 = apply_constraints(draws2)
 
         def vote(fn):
             """Share of the 1000 noisy curves giving each answer. Shown answer = most common
@@ -147,6 +151,12 @@ class SoilModel:
         group = vote(soil_group)       # Gravel / Sand / Silt / Clay: when >= 80 %, right 98 % of the time (CV)
         detail = vote(soil_type)       # e.g. Sandy gravel: finer question, lower confidence
         coarse = vote(coarse_or_fine)  # Coarse / Fine: when >= 80 %, right 98 % of the time (CV)
+        # Top two main groups together: how sure is the model that the soil is one of these two?
+        c2 = Counter(soil_group(d) for d in draws2).most_common(2)
+        types2 = [t for t, _ in c2]
+        if group['type'] in types2:                      # shown answer first
+            types2.sort(key=lambda t: t != group['type'])
+        top_two = {'types': types2, 'confidence': int(round(100 * sum(c for _, c in c2) / n_draws))}
         lo, hi = np.percentile(draws, [10, 90], axis=0)
         return {
             'curve': [[float(d), round(float(p), 1)] for d, p in zip(SIZES_MM, curve)],
@@ -156,6 +166,7 @@ class SoilModel:
             'alternatives': group['alternatives'],
             'detail': detail,
             'coarse': coarse,
+            'top_two': top_two,
         }
 
     # ------------------------------------------------------------ save / load

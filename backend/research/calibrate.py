@@ -38,3 +38,14 @@ for K in (1.0,1.25,1.5,1.75,2.0,2.5):
         v=np.array(v); c,ok=v[:,0],v[:,1].astype(bool); hi=c>=0.8
         line+=f'{k}: conf {c.mean()*100:.0f}% vs right {ok.mean()*100:.0f}% | >=80%: {hi.mean()*100:.0f}% of samples, right {ok[hi].mean()*100 if hi.any() else 0:.0f}%   '
     print(line, flush=True)
+
+# Top-two answer: is the true main group one of the two most likely groups? (constants.TOP2_NOISE_SCALE)
+for K in (1.5, 1.75, 2.0):
+    r2 = []
+    for p, mu, cov, y in cases:
+        L = np.linalg.cholesky(cov + 1e-6 * np.eye(10))
+        d = np.repeat(p[None], 1000, 0); d[:, :-1] += mu + K * (Z @ L.T); d = apply_constraints(d)
+        mc = Counter(soil_group(x) for x in d).most_common(2)
+        r2.append((sum(n for _, n in mc) / 1000, soil_group(y) in [m[0] for m in mc]))
+    v = np.array(r2); c, ok = v[:, 0], v[:, 1].astype(bool); hi = c >= 0.8
+    print(f'top two, K={K}: conf {c.mean()*100:.0f}% vs right {ok.mean()*100:.0f}% | >=80%: {hi.mean()*100:.0f}% of samples, right {ok[hi].mean()*100:.0f}%', flush=True)

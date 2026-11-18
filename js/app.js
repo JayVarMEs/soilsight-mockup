@@ -56,9 +56,35 @@
     a.download = name; document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   }
-  const csvHeader = ['sample_id', 'site', 'date', 'predicted_type', 'confidence_pct', 'gravel_pct', 'sand_pct', 'silt_pct', 'clay_pct', 'd10_mm', 'd30_mm', 'd50_mm', 'd60_mm', 'cu', 'cc', 'uscs', ...window.Soil.SIZES.map(s => `pass_${s}mm`)];
+  // ---------- lab (reference) curve: type it in, get the EMD (same formula as the competition) ----------
+  const LAB_COLS = window.Soil.SIZES.slice(0, 10);   // 0.002 ... 63 mm (200 mm is always 100)
+  function emdOf(trueCurve, predCurve) {
+    const S = window.Soil.SIZES;
+    let tot = 0;
+    for (let i = 0; i < S.length - 1; i++) {
+      const e0 = Math.abs(trueCurve[i] - predCurve[i]), e1 = Math.abs(trueCurve[i + 1] - predCurve[i + 1]);
+      tot += (e0 + e1) / 2 * (Math.log10(S[i + 1]) - Math.log10(S[i]));
+    }
+    return tot;
+  }
+  // Text -> 11 numbers. Accepts 10 values (0.002 ... 63 mm) or 11 (last must be 100). Returns {values} or {error}.
+  function parseLab(text) {
+    const parts = String(text || '').split(/[\s,;]+/).filter(Boolean);
+    if (parts.length !== 10 && parts.length !== 11) return { error: `Type 10 numbers (one for each size from 0.002 to 63 mm). You typed ${parts.length}.` };
+    const v = parts.map(p => parseFloat(p.replace(',', '.')));
+    if (v.some(x => !Number.isFinite(x))) return { error: 'Use numbers only, separated by commas or spaces.' };
+    if (v.some(x => x < 0 || x > 100)) return { error: 'Every value is a percent between 0 and 100.' };
+    for (let i = 1; i < v.length; i++) if (v[i] < v[i - 1]) return { error: 'Values must never go down (a bigger sieve lets more through).' };
+    if (v.length === 11 && v[10] !== 100) return { error: 'The 200 mm value must be 100.' };
+    if (v.length === 10) v.push(100);
+    return { values: v };
+  }
+  const labVerdict = e => e < 20 ? 'Very close to the lab result.' : e < 40 ? 'Close. This is typical for our model.' : e < 60 ? 'Fair. Noticeably off in some sizes.' : 'Far from the lab result. Do not rely on this prediction.';
+
+  const csvHeader = ['sample_id', 'site', 'date', 'predicted_type', 'confidence_pct', 'gravel_pct', 'sand_pct', 'silt_pct', 'clay_pct', 'd10_mm', 'd30_mm', 'd50_mm', 'd60_mm', 'cu', 'cc', 'uscs', ...window.Soil.SIZES.map(s => `pass_${s}mm`), 'lab_emd', ...window.Soil.SIZES.map(s => `lab_${s}mm`)];
   const csvRow = r => [r.id, r.site, r.date, r.type, r.confidence, r.fractions.gravel, r.fractions.sand, r.fractions.silt, r.fractions.clay,
-    num(r.d10, 4), num(r.d30, 4), num(r.d50, 4), num(r.d60, 4), num(r.cu), num(r.cc), r.uscs, ...r.curve.map(c => c[1])];
+    num(r.d10, 4), num(r.d30, 4), num(r.d50, 4), num(r.d60, 4), num(r.cu), num(r.cc), r.uscs, ...r.curve.map(c => c[1]),
+    r.reference ? num(r.emd, 1) : '', ...window.Soil.SIZES.map((_, i) => r.reference ? r.reference[i] : '')];
 
   // ---------- views ----------
   function viewHome() {
@@ -615,13 +641,20 @@
   }
   // Thresholds checked on the 24 lab samples: when the main group is >= 80 %, it was right 96 % of the time
   const confWord = c => (c >= 80 ? 'High' : c >= 50 ? 'Medium' : 'Low');
+  // When one group is not certain but two groups together are, say so (checked on the 24 lab samples)
+  function topTwoText(r) {
+    const t = r.top_two;
+    if (!t || t.types.length < 2 || t.confidence < 80) return '';
+    return ` It is very likely <strong>${esc(t.types[0].toLowerCase())} or ${esc(t.types[1].toLowerCase())}</strong> (${t.confidence}%). In our tests the true group was one of the top two ${state.api.reliability_top_two || 91}% of the time.`;
+  }
   function confText(r) {
     if (r.simulated) return 'Simulated result — not a real prediction.';
     const w = confWord(r.confidence);
     if (r.detail) {
+      const two = topTwoText(r);
       return w === 'High' ? `The model is sure this is mainly <strong>${esc(r.type.toLowerCase())}</strong>. In our tests, answers this sure were right ${state.api.reliability_at_80 || 98}% of the time.`
-        : w === 'Medium' ? 'Likely, but the next group is also possible. A clearer photo (or more photos) can help.'
-        : 'The model is unsure between groups. Take 2–3 more photos of the same soil, or check in the lab if it matters.';
+        : w === 'Medium' ? 'Likely, but the next group is also possible.' + two + ' A clearer photo (or more photos) can help.'
+        : 'The model is unsure between groups.' + two + ' Take 2–3 more photos of the same soil, or check in the lab if it matters.';
     }
     return w === 'High' ? 'The model is fairly sure about this soil type.'
       : w === 'Medium' ? 'Likely, but the next option is also possible.'
@@ -686,7 +719,8 @@
             <div class="pred-type"><strong>${esc(r.type)}</strong><span class="pct">${r.confidence}%</span></div>
             <div class="bar" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${r.confidence}" aria-label="Confidence"><span style="width:${r.confidence}%"></span></div>
             <div class="conf-note muted">${r.simulated ? 'Confidence (simulated)' : 'Confidence = how often the model gets the same answer when we allow for its usual error.'}</div>
-            ${r.detail || r.coarse ? `<dl class="sub-answers">
+            ${r.detail || r.coarse || r.top_two ? `<dl class="sub-answers">
+              ${r.top_two && r.top_two.types.length > 1 ? `<div><dt>One of these two groups</dt><dd><strong>${esc(r.top_two.types[0])} or ${esc(r.top_two.types[1])}</strong> <span class="mono">${r.top_two.confidence}%</span></dd></div>` : ''}
               ${r.coarse ? `<div><dt>Coarse or fine soil</dt><dd><strong>${esc(r.coarse.type)}</strong> <span class="mono">${r.coarse.confidence}%</span></dd></div>` : ''}
               ${r.detail ? `<div><dt>Closest detailed type</dt><dd><strong>${esc(r.detail.type)}</strong> <span class="mono">${r.detail.confidence}%</span></dd></div>` : ''}
             </dl>` : ''}
@@ -723,7 +757,7 @@
         <section class="card" aria-labelledby="chart-label">
           <div class="chart-head">
             <div class="card__label" id="chart-label" style="margin:0">Cumulative grain size distribution</div>
-            <div class="chart-legend" aria-hidden="true"><span><i></i>Predicted % passing</span>${r.band ? '<span><i class="ci"></i>Likely range (80%)</span>' : ''}<span><i class="d"></i>D10 / D50 / D60</span></div>
+            <div class="chart-legend" aria-hidden="true"><span><i></i>Predicted % passing</span>${r.reference ? '<span><i class="ref"></i>Lab result</span>' : ''}${r.band ? '<span><i class="ci"></i>Likely range (80%)</span>' : ''}<span><i class="d"></i>D10 / D50 / D60</span></div>
           </div>
           <p class="chart-scroll-hint" id="chart-scroll-hint">Swipe horizontally to explore the full chart.</p>
           <div id="result-chart" aria-describedby="chart-scroll-hint"></div>
@@ -735,6 +769,7 @@
             </table>
           </details>
         </section>
+        ${labCard(r)}
         <details class="card glossary">
           <summary><strong>What do these words and numbers mean?</strong></summary>
           <dl>
@@ -745,17 +780,60 @@
             <div><dt>Cu (uniformity)</dt><dd>D60 ÷ D10. Below about 4–6: grains are mostly one size. Higher: many different sizes mixed.</dd></div>
             <div><dt>Cc (curvature)</dt><dd>Shows if the mix of sizes is even. Between 1 and 3 together with a high Cu means "well graded" (good for building on).</dd></div>
             <div><dt>USCS</dt><dd>An engineering soil code. First letter: G = gravel, S = sand, M = silt, C = clay. Second: W = well graded, P = poorly graded. E.g. SP-SM = poorly graded sand with some silt.</dd></div>
-            <div><dt>Confidence</dt><dd>How sure the model is. The big answer is the <em>main group</em> (gravel, sand, silt or clay): when it says 80% or more, it was right 98% of the time on lab-tested samples. The detailed name (e.g. "sandy gravel") is a harder question, so its % is lower. The model was trained on only 24 lab-tested samples.</dd></div>
+            <div><dt>Confidence</dt><dd>How sure the model is. The big answer is the <em>main group</em> (gravel, sand, silt or clay): when it says 80% or more, it was right 98% of the time on lab-tested samples. When the model cannot pick one group, it also gives the two most likely groups together; the true group was one of those two ${state.api.reliability_top_two || 91}% of the time. The detailed name (e.g. "sandy gravel") is a harder question, so its % is lower. The model was trained on only 24 lab-tested samples.</dd></div>
             <div><dt>Coarse / fine</dt><dd>Coarse = mostly sand and gravel (water drains well). Fine = mostly silt and clay (holds water, can get soft). Engineers use this split first.</dd></div>
           </dl>
         </details>
       </div>
     </div>`;
   }
+  function labCard(r) {
+    if (r.simulated || r.example) return '';
+    const base = state.api.cv_emd_baseline, cv = state.api.cv_emd;
+    if (r.reference) {
+      const diffs = r.curve.map((c, i) => Math.round((c[1] - r.reference[i]) * 10) / 10);
+      return `<section class="card lab" aria-labelledby="lab-label">
+        <div class="card__label" id="lab-label">Check against the lab result</div>
+        <div class="lab__row"><span class="lab__emd" aria-label="Error ${num(r.emd, 1)}">${num(r.emd, 1)}</span><span class="muted">EMD error (lower is better, 0 = perfect)</span></div>
+        <p>${labVerdict(r.emd)}${cv ? ` On 24 lab samples our model averaged <strong>${num(cv, 1)}</strong>${base ? `, a simple average curve <strong>${num(base, 1)}</strong>` : ''}.` : ''}</p>
+        <details class="data-table"><summary>Show prediction vs lab, size by size</summary>
+          <table class="table"><thead><tr><th scope="col">Grain size (mm)</th><th scope="col" class="num">Predicted %</th><th scope="col" class="num">Lab %</th><th scope="col" class="num">Difference</th></tr></thead>
+          <tbody>${r.curve.map((c, i) => `<tr><td class="mono">${c[0]}</td><td class="num">${c[1]}</td><td class="num">${r.reference[i]}</td><td class="num ${Math.abs(diffs[i]) >= 10 ? 'neg' : ''}">${diffs[i] > 0 ? '+' : ''}${diffs[i]}</td></tr>`).join('')}</tbody></table>
+        </details>
+        <div class="lab__actions"><button class="btn btn--ghost" type="button" id="lab-clear">Remove lab result</button></div>
+      </section>`;
+    }
+    return `<section class="card lab" aria-labelledby="lab-label">
+      <div class="card__label" id="lab-label">Check against the lab result (optional)</div>
+      <p class="muted" style="font-size:14px">Have a sieve test for this soil? Type the % passing at ${LAB_COLS.join(', ')} mm (10 numbers, in this order) to see how far off the prediction is.</p>
+      <label for="lab-text" class="muted" style="font-size:13px">Lab % passing</label>
+      <textarea id="lab-text" placeholder="e.g. 1.2, 3.6, 10.2, 18.3, 25.9, 39.6, 52.9, 79.0, 95.8, 100" spellcheck="false"></textarea>
+      <div class="lab__err" id="lab-err" role="alert"></div>
+      <div class="lab__actions"><button class="btn btn--primary" type="button" id="lab-go">Compare</button></div>
+    </section>`;
+  }
+
   function afterResult(uid) {
     const r = findRecord(uid);
     if (!r) return;
     window.GrainChart.render(document.getElementById('result-chart'), r);
+    const saveLab = () => {
+      // the saved copy in history is a separate object from the one on screen: keep both the same
+      const h = state.history.find(x => x.uid === r.uid);
+      if (h) { if (r.reference) { h.reference = r.reference; h.emd = r.emd; } else { delete h.reference; delete h.emd; } persist(); }
+      render();
+    };
+    const go = document.getElementById('lab-go');
+    if (go) go.onclick = () => {
+      const p = parseLab(document.getElementById('lab-text').value);
+      const err = document.getElementById('lab-err');
+      if (p.error) { err.textContent = p.error; return; }
+      r.reference = p.values;
+      r.emd = emdOf(p.values, r.curve.map(c => c[1]));
+      saveLab();
+    };
+    const clr = document.getElementById('lab-clear');
+    if (clr) clr.onclick = () => { delete r.reference; delete r.emd; saveLab(); };
     document.getElementById('export-one').onclick = () => downloadCsv(`soilsight_${r.id}.csv`, [csvHeader, csvRow(r)]);
     // Print view = a one-page report; the browser's print dialog can "Save as PDF"
     document.getElementById('print-one').onclick = () => {

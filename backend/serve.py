@@ -33,7 +33,7 @@ sys.path.insert(0, str(HERE))
 
 from soilsight.features import analyse_photo  # noqa: E402
 from soilsight.photo import estimate_scale, open_photo, photo_info, quality_checks  # noqa: E402
-from soilsight.constants import RELIABILITY_AT_80  # noqa: E402
+from soilsight.constants import RELIABILITY_AT_80, RELIABILITY_TOP_TWO  # noqa: E402
 from soilsight.model import MODEL_NAME, MODEL_VERSION, SoilModel  # noqa: E402
 
 MODEL_PATH = Path(os.environ.get('SOILSIGHT_MODEL', HERE / 'artifacts' / 'model.joblib'))
@@ -93,6 +93,7 @@ def health():
         'cv_emd_baseline': r.get('cv_emd', {}).get('baseline_mean_curve'),
         'cv_type_accuracy': r.get('cv_type_accuracy'),
         'reliability_at_80': RELIABILITY_AT_80,
+        'reliability_top_two': RELIABILITY_TOP_TWO,
     }
 
 

@@ -28,7 +28,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-HERE = Path(__file__).resolve().parent
+if getattr(sys, 'frozen', False):          # running as the SoilSight.exe built by build_exe.bat
+    _BASE = Path(sys._MEIPASS)
+    HERE = _BASE / 'backend'
+    os.environ.setdefault('TORCH_HOME', str(_BASE / 'torch'))   # ResNet-34 weights are inside the exe folder
+else:
+    HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 
 from soilsight.features import analyse_photo  # noqa: E402
@@ -37,7 +42,7 @@ from soilsight.constants import RELIABILITY_AT_80, RELIABILITY_TOP_TWO  # noqa: 
 from soilsight.model import MODEL_NAME, MODEL_VERSION, SoilModel  # noqa: E402
 
 MODEL_PATH = Path(os.environ.get('SOILSIGHT_MODEL', HERE / 'artifacts' / 'model.joblib'))
-WEB_DIR = HERE.parent
+WEB_DIR = Path(sys._MEIPASS) if getattr(sys, 'frozen', False) else HERE.parent
 MAX_FILES, MAX_BYTES = 10, 20 * 1024 * 1024
 logging.basicConfig(level=logging.INFO, format='%(asctime)s  %(message)s', datefmt='%H:%M:%S')
 log = logging.getLogger('soilsight')
@@ -202,4 +207,7 @@ if __name__ == '__main__':
     if host == '0.0.0.0' and lan_ip():
         print(f'  SoilSight on your phone:     http://{lan_ip()}:{port}   (same Wi-Fi)')
     print('  Keep this window open. Press Ctrl+C to stop.\n')
+    if getattr(sys, 'frozen', False):
+        import webbrowser
+        threading.Timer(4.0, lambda: webbrowser.open(f'http://localhost:{port}')).start()
     uvicorn.run(app, host=host, port=port, log_level='warning')

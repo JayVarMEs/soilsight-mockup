@@ -13,6 +13,7 @@ Writes backend/artifacts/submission_A.csv, submission_B.csv, submission_C.csv
   A = trainlike photos + Ridge alpha 150 (current setting)
   B = trainlike photos + Ridge alpha 1000
   C = normal photos    + Ridge alpha 1000
+  D = trainlike photos + Ridge alpha 50
 """
 import argparse
 import io
@@ -51,6 +52,7 @@ def trainlike_features(path, enc):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--data', required=True)
+    ap.add_argument('--only', default='', help='make only these variants, e.g. D')
     a = ap.parse_args()
     root, out = Path(a.data), HERE / 'artifacts'
     labels = pd.read_csv(T.find_one(root, 'Training_labels*.csv'))
@@ -78,7 +80,9 @@ def main():
         print(f'  {nm:10s} mean z-distance {np.abs((Z - mu) / sd).mean():.3f}   (training samples: {np.abs((X - mu) / sd).mean():.3f})')
 
     fallback = None
-    for name, Xt, alpha in (('A', Xl, 150.0), ('B', Xl, 1000.0), ('C', Xn, 1000.0)):
+    for name, Xt, alpha in (('A', Xl, 150.0), ('B', Xl, 1000.0), ('C', Xn, 1000.0), ('D', Xl, 50.0)):
+        if a.only and name not in a.only.upper():
+            continue
         M.RIDGE_ALPHA = alpha
         model = M.SoilModel().fit(X, Y, sample_ids=ids, log=lambda *x: None)
         curves, _ = model.predict_curve(Xt)

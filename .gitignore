@@ -8,3 +8,7 @@ __pycache__/
 backend/artifacts/cache/
 backend/fake_data/
 data/
+backend/build/
+backend/dist/
+backend/bundle/
+backend/SoilSight.spec
